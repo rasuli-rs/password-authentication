@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, redirect
+from flask import Flask, render_template, url_for, redirect, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import (
     UserMixin,
@@ -23,7 +23,6 @@ app.config["SECRET_KEY"] = "thisisasecretkey"
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
-login_manager.init_app(app)
 
 
 @login_manager.user_loader
@@ -40,15 +39,10 @@ class User(db.Model, UserMixin):
 
 # regestraion form which will inherit from flask form
 class RegisterForm(FlaskForm):
-    username = StringField(
-        validators=[InputRequired(), Length(min=4, max=20)],
-        render_kw={"placeholder": "Username"},
-    )
+    username = StringField(validators=[InputRequired(), Length(min=4, max=20)],
+    render_kw={"placeholder": "Username"},)
 
-    password = PasswordField(
-        validators=[InputRequired(), Length(min=8, max=20)],
-        render_kw={"placeholder": "Password"},
-    )
+    password = PasswordField(validators=[InputRequired(), Length(min=8, max=20)],render_kw={"placeholder": "Password"},)
 
     submit = SubmitField("Register")
 
@@ -56,21 +50,17 @@ class RegisterForm(FlaskForm):
     def validate_username(self, username):
         existing_user_username = User.query.filter_by(username=username.data).first()
         if existing_user_username:
-            raise ValidationError(
-                "That username already exists. Please choose a different one."
-            )
+            raise ValidationError("That username already exists. Please choose a different one.")
 
 
 class LoginForm(FlaskForm):
     username = StringField(
         validators=[InputRequired(), Length(min=4, max=20)],
-        render_kw={"placeholder": "Username"},
-    )
+        render_kw={"placeholder": "Username"},)
 
     password = PasswordField(
         validators=[InputRequired(), Length(min=8, max=20)],
-        render_kw={"placeholder": "Password"},
-    )
+        render_kw={"placeholder": "Password"},)
 
     submit = SubmitField("Login")
 
@@ -82,13 +72,14 @@ def home():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    form = LoginForm()
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    form = LoginForm() # created var called form & we passs this form to html templates
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
-        if user:
-            if bcrypt.check_password_hash(user.password, form.password.data):
-                login_user(user)
-                return redirect(url_for("dashboard"))
+        if user and bcrypt.check_password_hash(user.password, form.password.data):
+            login_user(user)
+            return redirect(url_for("dashboard"))
     return render_template("login.html", form=form)
 
 
@@ -108,16 +99,18 @@ def logout():
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
     form = RegisterForm()
-
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data)
         new_user = User(username=form.username.data, password=hashed_password)
         db.session.add(new_user)
         db.session.commit()
+        flash('Your account has been created! You are now able to log in', 'success')
         return redirect(url_for("login"))
 
-    return render_template("register.html", form=form)
+    return render_template('register.html', form=form)
 
 
 if __name__ == "__main__":

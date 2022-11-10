@@ -9,9 +9,10 @@
 </head>
 
 <body>
-    <h1>Hello you are logged in.</h1>
-    
-    <a href="{{url_for('logout')}}">Press here to logout</a>
+    {% if current_user.is_authenticated %}
+    <h2>User {{ current_user.username }} is now logged in!</h2>
+    {% endif %}
+    <a href="{{ url_for('logout') }}">Click here to logout</a>
 </body>
 
 </html>
