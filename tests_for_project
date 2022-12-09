@@ -1,0 +1,102 @@
+import unittest
+ 
+import requests
+from files_app.app1 import app, bp, login_page, index, info, stocklist, index1, favorites, DB_NAME, DB_HOST, DB_PASS, DB_USER
+from files_app import *
+import pytest
+from flask import Blueprint, flash, url_for, render_template, redirect, request, session
+from unittest.mock import Mock
+from datetime import datetime
+import json
+import psycopg2
+import yfinance as yf
+import humanize
+from unittest import TestCase
+import main
+
+
+class TestFavorites(unittest.TestCase):
+    def test_favorites(self):
+        with app.test_client() as client:
+            result = client.get('/favlist')
+            self.assertEqual(result.status_code, 200)
+
+
+
+
+
+
+'''
+# test for stocklist() ****
+class TestStocklist(TestCase):
+    def setUp(self):
+        self.headers={"user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36"}
+        self.res=requests.get("https://api.nasdaq.com/api/quote/list-type/nasdaq100",headers=self.headers)
+        self.main_data=self.res.json()['data']['data']['rows']
+        
+    def test_stocklist_length(self):
+        self.assertEqual(len(self.main_data),102) # there are 102 stocks
+        
+    def test_stocklist_elements(self):
+        for i in range(len(self.main_data)):
+            self.assertIn('symbol', self.main_data[i].keys())
+            # self.assertIn('companyName', self.main_data) # it cannot find company name for some reason so no need to pass the name, the symbol is enough
+
+
+# test for info() passed ****
+class TestInfo(unittest.TestCase):
+    def create_app(self):
+        app = Flask(__name__)
+        return app
+
+    def setUp(self):
+        self.app = self.create_app()
+        self.client = self.app.test_client()
+        self.client.testing = True
+        self.client.get = Mock(return_value=self.client)
+        self.client.args = {'ticker_symbol': 'AAPL'}
+        self.client.get.return_value.args = {'ticker_symbol': 'AAPL'}
+
+    def test_ticker_symbol(self):
+        response = self.client.get("/info")
+        self.assertEqual(response.args['ticker_symbol'], 'AAPL')
+
+
+# # test for cryptolist(): passed ****
+class CryptolistTest(unittest.TestCase):
+    def setUp(self):
+        self.crypto_data = requests.get('https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?sort=market_cap&start=1&cryptocurrency_type=tokens&convert=BTC', headers={'X-CMC_PRO_API_KEY': 'f785d857-d08e-4819-8c00-0d4b24f7bec6'})
+        self.crypto_data = self.crypto_data.json()
+    def test_crypto_data(self):
+        self.assertTrue(self.crypto_data is not None)
+    def test_crypto_data_type(self):
+        self.assertIsInstance(self.crypto_data, dict)
+
+
+# # test for the login page passed ****
+class test_login_page(unittest.TestCase):
+    def test_login_page(self):
+        with app.test_request_context('/login_page', method='POST'):
+            assert request.path == '/login_page'
+            assert request.method == 'POST'
+
+'''
+
+# # tests for index() passed
+# class TestIndex(unittest.TestCase):
+
+#     def test_index_GET(self):
+#         response = requests.get('http://127.0.0.1:5000/')
+#         self.assertEqual(response.status_code, 200)
+
+#     def test_index_POST(self):
+#         response = requests.post('http://127.0.0.1:5000/', data={"ticker_symbol": "AMZN"})
+#         self.assertEqual(response.status_code, 200)
+#         # self.assertEqual(response.url, "http://127.0.0.1:5000/dashboard/info/AMZN")
+
+
+
+
+
+if __name__ == "__main__":
+    unittest.main()
